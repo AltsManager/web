@@ -10,6 +10,8 @@ This repo is the frontend (Next.js App Router). It talks to the
 model, auth, and document storage. You'll need that API running locally to
 use this app.
 
+See also: [www.altsmanager.org](https://www.altsmanager.org).
+
 ## Requirements
 
 - Node.js 20+
