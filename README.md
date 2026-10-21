@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AltsManager (Web)
 
-## Getting Started
+AltsManager is an open-source, privacy-oriented platform for tracking
+alternative investments -- private stock, SAFE notes, real property, LLC
+interests, private equity, VC fund LP positions, crypto, artwork, and more --
+across multiple investing entities.
 
-First, run the development server:
+This repo is the frontend (Next.js App Router). It talks to the
+[FastAPI backend](https://github.com/AltsManager/api), which owns the data
+model, auth, and document storage. You'll need that API running locally to
+use this app.
+
+## Requirements
+
+- Node.js 20+
+- The [api](https://github.com/AltsManager/api) backend running locally (see
+  its README for setup) -- there is no signup flow here, since the API has
+  none by design; bootstrap an admin user via the API's `create_admin` script.
+
+## Setup
 
 ```bash
+git clone https://github.com/AltsManager/web.git
+cd web
+npm install
+cp .env.local.example .env.local   # defaults to http://localhost:8000
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit http://localhost:3000 and sign in with a user created in the API.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_API_URL` | Base URL of the API backend. Public by design -- it's just where the browser sends requests, not a secret. |
 
-## Learn More
+## Development
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run lint      # eslint
+npm run build     # type-checks and builds a production bundle
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Auth
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Sign-in sets an httpOnly session cookie on the API's domain; this app never
+reads or stores the token itself (no `localStorage`/`sessionStorage` use).
+Route gating in `(app)/layout.tsx` is a UX convenience -- the API is the real
+authorization boundary. See [SECURITY.md](SECURITY.md) for more.
 
-## Deploy on Vercel
+## Project structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/
+    (app)/         authenticated app routes: entities, investments,
+                   transactions, documents, counterparties
+    login/         sign-in page
+  components/      shared UI (including components/ui, shadcn/ui primitives)
+  lib/api/         typed API client functions
+```
