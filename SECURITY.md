@@ -12,7 +12,7 @@ Instead, report them privately using
 [GitHub Security Advisories](https://github.com/AltsManager/web/security/advisories/new)
 for this repository (or the
 [api repo's advisories](https://github.com/AltsManager/api/security/advisories/new)
-if the issue is in the backend).
+if the issue is in the backend), or by emailing **info@altsmanager.com**.
 
 Include as much detail as you can: a description of the vulnerability and its
 impact, steps to reproduce, and any relevant logs or proof-of-concept code.
