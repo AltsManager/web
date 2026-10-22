@@ -20,5 +20,8 @@ COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 USER node
 
 EXPOSE 3000
-ENV PORT=3000 HOSTNAME=0.0.0.0
+# HOSTNAME must be the IPv6 wildcard, not 0.0.0.0 -- Datum Compute's network
+# is IPv6-only, and 0.0.0.0 binds IPv4 only (see AltsManager/api's DEPLOY.md
+# "Gotchas" for the same issue hit there with uvicorn).
+ENV PORT=3000 HOSTNAME=::
 CMD ["node", "server.js"]
