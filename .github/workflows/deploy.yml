@@ -1,0 +1,92 @@
+name: Deploy
+
+# Builds the web image and deploys it to Datum Cloud Compute on every push to
+# main. See DEPLOY.md for the one-time setup this depends on.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/altsmanager/web
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image tag
+        id: image
+        run: echo "image=${IMAGE}:${{ github.sha }}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      # NEXT_PUBLIC_API_URL is inlined into the client bundle at build time, so
+      # it has to be known here, not just at deploy time. It's set once, by
+      # hand, as the API_PUBLIC_URL repository variable, after the api
+      # workload's first deploy produces its public hostname (see DEPLOY.md) --
+      # it shouldn't change afterwards, since that hostname is tied to the
+      # workload, not to any particular deploy.
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.image.outputs.image }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ vars.API_PUBLIC_URL }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    env:
+      DATUM_PROJECT: altsmanager
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Install datumctl
+        run: go install go.datum.net/datumctl@latest
+
+      # Service-account login per https://www.datum.net/docs/datumctl/auth/logging-in.
+      # The service account must be scoped to exactly this one project --
+      # datum-cloud/datumctl#324 is an open bug where --credentials login fails
+      # non-interactively if the account can see more than one context.
+      - name: Authenticate to Datum Cloud
+        env:
+          DATUM_SERVICE_ACCOUNT_KEY: ${{ secrets.DATUM_SERVICE_ACCOUNT_KEY }}
+        run: |
+          umask 077
+          printf '%s' "$DATUM_SERVICE_ACCOUNT_KEY" > "$RUNNER_TEMP/datum-key.json"
+          datumctl login --credentials "$RUNNER_TEMP/datum-key.json"
+          rm -f "$RUNNER_TEMP/datum-key.json"
+
+      # NOTE: unverified against a real deployment -- Compute access for this
+      # project is pending as of when this workflow was written (see DEPLOY.md).
+      - name: Deploy to Datum Compute
+        run: |
+          datumctl compute deploy altsmanager-web \
+            --image="${{ needs.build-and-push.outputs.image }}" \
+            --city=DFW \
+            --min=1 \
+            --http-port=3000
