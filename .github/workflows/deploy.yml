@@ -36,7 +36,7 @@ jobs:
         id: image
         run: echo "image=${IMAGE}:${{ github.sha }}" >> "$GITHUB_OUTPUT"
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       # NEXT_PUBLIC_API_URL is inlined into the client bundle at build time, so
       # it has to be known here, not just at deploy time. It's set once, by
