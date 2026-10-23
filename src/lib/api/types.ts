@@ -111,6 +111,12 @@ export const ASSET_TYPES: AssetType[] = [
 
 export const INVESTMENT_STATUSES: InvestmentStatus[] = ["active", "exited", "written_off"];
 
+export const INVESTMENT_STATUS_BADGE_CLASS: Record<InvestmentStatus, string> = {
+  active: "bg-gain/10 text-gain",
+  exited: "bg-muted text-muted-foreground",
+  written_off: "bg-loss/10 text-loss",
+};
+
 export const VALUATION_SOURCES: ValuationSource[] = ["manual", "third_party", "mark"];
 
 export const OWNERSHIP_TYPES: OwnershipType[] = ["direct", "indirect"];
