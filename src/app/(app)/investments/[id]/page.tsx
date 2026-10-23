@@ -22,6 +22,7 @@ import {
 import {
   COUNTERPARTY_ROLES,
   DOCUMENT_TYPES,
+  INVESTMENT_STATUS_BADGE_CLASS,
   INVESTMENT_STATUSES,
   OWNERSHIP_TYPES,
   TRANSACTION_TYPES,
@@ -35,6 +36,7 @@ import {
 import { TypeAttributesFields } from "@/components/type-attributes-fields";
 import { useAuth } from "../../../providers";
 import { Badge } from "@/components/ui/badge";
+import { GainLossBadge } from "@/components/gain-loss-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -278,7 +280,9 @@ export default function InvestmentDetailPage({ params }: PageProps<"/investments
               <div>
                 <dt className="text-muted-foreground">Status</dt>
                 <dd>
-                  <Badge variant="secondary">{labelize(investment.status)}</Badge>
+                  <Badge className={INVESTMENT_STATUS_BADGE_CLASS[investment.status]}>
+                    {labelize(investment.status)}
+                  </Badge>
                 </dd>
               </div>
               <div>
@@ -287,16 +291,25 @@ export default function InvestmentDetailPage({ params }: PageProps<"/investments
               </div>
               <div>
                 <dt className="text-muted-foreground">Initial Amount</dt>
-                <dd>
+                <dd className="tabular-nums">
                   {formatCurrency(investment.initial_investment_amount, investment.currency)}
                 </dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">Current Valuation</dt>
-                <dd>
+                <dd className="flex items-center gap-2 tabular-nums">
                   {investment.current_valuation != null
                     ? formatCurrency(investment.current_valuation, investment.currency)
                     : "—"}
+                  {investment.current_valuation != null && (
+                    <GainLossBadge
+                      value={investment.current_valuation - investment.initial_investment_amount}
+                      label={formatCurrency(
+                        investment.current_valuation - investment.initial_investment_amount,
+                        investment.currency
+                      )}
+                    />
+                  )}
                 </dd>
               </div>
               {Object.entries(investment.type_attributes).map(([key, value]) => (
@@ -384,7 +397,7 @@ export default function InvestmentDetailPage({ params }: PageProps<"/investments
               <TableRow>
                 <TableHead>Entity</TableHead>
                 <TableHead>Effective Date</TableHead>
-                <TableHead>Percentage</TableHead>
+                <TableHead className="text-right">Percentage</TableHead>
                 <TableHead>Type</TableHead>
               </TableRow>
             </TableHeader>
@@ -395,7 +408,9 @@ export default function InvestmentDetailPage({ params }: PageProps<"/investments
                     {entities.find((e) => e.id === ownership.entity_id)?.name ?? ownership.entity_id}
                   </TableCell>
                   <TableCell>{formatDate(ownership.effective_date)}</TableCell>
-                  <TableCell>{ownership.percentage ?? "—"}</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {ownership.percentage != null ? `${ownership.percentage}%` : "—"}
+                  </TableCell>
                   <TableCell>{labelize(ownership.ownership_type)}</TableCell>
                 </TableRow>
               ))}
@@ -469,7 +484,7 @@ export default function InvestmentDetailPage({ params }: PageProps<"/investments
                 <TableHead>Date</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Entity</TableHead>
-                <TableHead>Amount</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -481,7 +496,9 @@ export default function InvestmentDetailPage({ params }: PageProps<"/investments
                     {entities.find((e) => e.id === transaction.entity_id)?.name ??
                       transaction.entity_id}
                   </TableCell>
-                  <TableCell>{formatCurrency(transaction.amount, transaction.currency)}</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {formatCurrency(transaction.amount, transaction.currency)}
+                  </TableCell>
                 </TableRow>
               ))}
               {(transactionsQuery.data?.items.length ?? 0) === 0 && (

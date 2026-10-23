@@ -136,7 +136,7 @@ export default function TransactionsPage() {
                 <TableHead>Type</TableHead>
                 <TableHead>Entity</TableHead>
                 <TableHead>Investment</TableHead>
-                <TableHead>Amount</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
                 {canWrite && <TableHead></TableHead>}
               </TableRow>
             </TableHeader>
@@ -158,9 +158,9 @@ export default function TransactionsPage() {
                         "View"}
                     </a>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-right">
                     {editingId === transaction.id ? (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-end gap-2">
                         <Input
                           type="number"
                           className="w-28"
@@ -175,7 +175,9 @@ export default function TransactionsPage() {
                         </Button>
                       </div>
                     ) : (
-                      formatCurrency(transaction.amount, transaction.currency)
+                      <span className="tabular-nums">
+                        {formatCurrency(transaction.amount, transaction.currency)}
+                      </span>
                     )}
                   </TableCell>
                   {canWrite && editingId !== transaction.id && (

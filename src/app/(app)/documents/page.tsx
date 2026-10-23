@@ -13,6 +13,17 @@ import {
   type DocumentStatus,
   type DocumentType,
 } from "@/lib/api/types";
+
+// The warning token itself is sub-3:1 contrast as text on a light surface by
+// design (per the dataviz skill's status palette) -- it's meant to be paired
+// with an icon, not used as plain text color. Use readable amber shades here
+// instead of the raw token for a text-only badge.
+const DOCUMENT_STATUS_BADGE_CLASS: Record<DocumentStatus, string> = {
+  pending_review: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
+  reviewed: "bg-muted text-muted-foreground",
+  approved: "bg-gain/10 text-gain",
+  archived: "bg-muted text-muted-foreground",
+};
 import { useAuth } from "../../providers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -253,7 +264,9 @@ export default function DocumentsPage() {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <Badge variant="secondary">{labelize(document.status)}</Badge>
+                      <Badge className={DOCUMENT_STATUS_BADGE_CLASS[document.status]}>
+                        {labelize(document.status)}
+                      </Badge>
                     )}
                   </TableCell>
                   <TableCell>{formatDate(document.uploaded_at)}</TableCell>

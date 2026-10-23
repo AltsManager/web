@@ -171,8 +171,8 @@ export default function EntityDetailPage({ params }: PageProps<"/entities/[id]">
               <TableRow>
                 <TableHead>Investment</TableHead>
                 <TableHead>Effective Date</TableHead>
-                <TableHead>Percentage</TableHead>
-                <TableHead>Units</TableHead>
+                <TableHead className="text-right">Percentage</TableHead>
+                <TableHead className="text-right">Units</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -187,8 +187,12 @@ export default function EntityDetailPage({ params }: PageProps<"/entities/[id]">
                     </a>
                   </TableCell>
                   <TableCell>{formatDate(ownership.effective_date)}</TableCell>
-                  <TableCell>{ownership.percentage ?? "—"}</TableCell>
-                  <TableCell>{ownership.units ?? "—"}</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {ownership.percentage != null ? `${ownership.percentage}%` : "—"}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {ownership.units ?? "—"}
+                  </TableCell>
                 </TableRow>
               ))}
               {(ownershipsQuery.data?.items.length ?? 0) === 0 && (
